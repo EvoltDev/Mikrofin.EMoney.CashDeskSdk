@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CashDeskIntegrationSdk", "CashDeskIntegrationSdk\CashDeskIntegrationSdk.csproj", "{14ED55C6-9513-4176-844B-05D513724975}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mikrofin.EMoney.CashDeskSdk", "Mikrofin.EMoney.CashDeskSdk\Mikrofin.EMoney.CashDeskSdk.csproj", "{14ED55C6-9513-4176-844B-05D513724975}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CashDeskIntegration.Sample", "CashDeskIntegration.Sample\CashDeskIntegration.Sample.csproj", "{DEE2BAC7-B31A-4EE8-A8B3-5472076E2E08}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mikrofin.EMoney.CashDeskSdk.Sample", "Mikrofin.EMoney.CashDeskSdk.Sample\Mikrofin.EMoney.CashDeskSdk.Sample.csproj", "{DEE2BAC7-B31A-4EE8-A8B3-5472076E2E08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

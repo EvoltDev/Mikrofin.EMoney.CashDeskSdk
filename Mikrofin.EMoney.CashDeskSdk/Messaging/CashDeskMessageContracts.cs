@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace CashDeskIntegrationSdk.Messaging;
+namespace Mikrofin.EMoney.CashDeskSdk.Messaging;
 
 internal static class CashDeskMessageTypes
 {

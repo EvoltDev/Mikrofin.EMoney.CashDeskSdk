@@ -2,8 +2,8 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using CashDeskIntegrationSdk;
-using CashDeskIntegrationSdk.Messaging;
+using Mikrofin.EMoney.CashDeskSdk;
+using Mikrofin.EMoney.CashDeskSdk.Messaging;
 using Microsoft.Extensions.Configuration;
 
 var cts = new CancellationTokenSource();

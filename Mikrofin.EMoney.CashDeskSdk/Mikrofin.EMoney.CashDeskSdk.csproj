@@ -4,8 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>CashDeskIntegrationSdk</RootNamespace>
-    <AssemblyName>CashDeskIntegrationSdk</AssemblyName>
+    <RootNamespace>Mikrofin.EMoney.CashDeskSdk</RootNamespace>
+    <AssemblyName>Mikrofin.EMoney.CashDeskSdk</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 

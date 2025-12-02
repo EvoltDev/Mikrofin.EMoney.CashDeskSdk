@@ -1,4 +1,4 @@
-﻿# Cash Desk Integration SDK
+﻿# Mikrofin EMoney CashDesk SDK
 
 This lightweight .NET Standard library wraps the `ws://…/ws/cashdesk` WebSocket
 protocol exposed by the Core API.  It gives integrators a typed client for logging
@@ -7,7 +7,7 @@ having to hand‐craft JSON frames.
 
 ## Installation
 
-1. Reference the `CashDeskIntegrationSdk` project (or package) from your solution.
+1. Reference the `Mikrofin.EMoney.CashDeskSdk` project (or package) from your solution.
 2. Instantiate `CashDeskClient` with the WebSocket endpoint of your Core API deployment.
 
 ```csharp

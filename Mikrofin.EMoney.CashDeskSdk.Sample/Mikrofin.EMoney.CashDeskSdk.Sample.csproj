@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\CashDeskIntegrationSdk\CashDeskIntegrationSdk.csproj" />
+    <ProjectReference Include="..\Mikrofin.EMoney.CashDeskSdk\Mikrofin.EMoney.CashDeskSdk.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

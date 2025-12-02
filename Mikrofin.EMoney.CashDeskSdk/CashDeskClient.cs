@@ -7,9 +7,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using CashDeskIntegrationSdk.Messaging;
+using Mikrofin.EMoney.CashDeskSdk.Messaging;
 
-namespace CashDeskIntegrationSdk;
+namespace Mikrofin.EMoney.CashDeskSdk;
 
 /// <summary>
 ///     High-level client that wraps the cash desk WebSocket protocol and exposes strongly typed events and commands.

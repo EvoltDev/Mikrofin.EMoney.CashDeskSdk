@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CashDeskIntegrationSdk;
+namespace Mikrofin.EMoney.CashDeskSdk;
 
 /// <summary>
 ///     Configuration values that control how the SDK connects to the cash desk WebSocket endpoint.
