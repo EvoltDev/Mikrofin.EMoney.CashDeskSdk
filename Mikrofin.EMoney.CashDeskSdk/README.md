@@ -84,7 +84,7 @@ client.CashierLoginSucceeded += (_, payload) =>
 
 client.PaymentCreated += (_, payload) =>
 {
-    Console.WriteLine($"Nova uplata {payload.Payment.Id}, QR: {payload.PaymentQrCode}");
+    Console.WriteLine($"Nova uplata {payload.Payment.Id}, QR: {payload.PaymentDeepLink}");
 };
 
 client.PaymentCreateFailed += (_, payload) =>
@@ -111,9 +111,9 @@ await client.CreatePaymentAsync(
 
 | Događaj                  | Opis                                                                 | Payload (ključna polja)                                                                                                                                                        |
 |-------------------------|----------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `CashierLoginSucceeded` | Server je prihvatio `cashier.login`.                                | `Cashier` (AccountId, UserName, Location…), opcioni `PendingPayment` (ako integrator treba odmah preuzeti postojeću uplatu), `PaymentQrCode` (ako postoji).                    |
+| `CashierLoginSucceeded` | Server je prihvatio `cashier.login`.                                | `Cashier` (AccountId, UserName, Location…), opcioni `PendingPayment` (ako integrator treba odmah preuzeti postojeću uplatu), `PaymentDeepLink` (ako postoji).                 |
 | `CashierLoginFailed`    | Prijava odbijena.                                                    | `CashDeskErrorPayload` – `Code` (npr. `InvalidCredentials`, `UserLocked`) i `Message`. Nijedno polje nije `null`; koristi ih za prikaz operateru ili za audit log.             |
-| `PaymentCreated`        | `payment.create` uspješan.                                           | `PaymentCreatedPayload` – `Payment` (`PaymentDetailsResponse`: Id, Amount, Currency, Status, Metadata, LineItems), obavezni `PaymentQrCode`.                                   |
+| `PaymentCreated`        | `payment.create` uspješan.                                           | `PaymentCreatedPayload` – `Payment` (`PaymentDetailsResponse`: Id, Amount, Currency, Status, Metadata, LineItems), obavezni `PaymentDeepLink`.                                |
 | `PaymentCreateFailed`   | Kreiranje uplate odbijeno (`payment.create.error`).                  | `PaymentCreateErrorPayload` – nasljeđuje `CashDeskErrorPayload`. Opcioni `PendingPayment` (ako server zadržava prethodnu uplatu). `Code` npr. `MissingLineItems`. |
 | `PaymentCompleted`      | Korisnik je završio plaćanje (`payment.completed`).                  | `PaymentCompletedPayload` – `Payment` (iste strukture kao iznad) i `UserId` koji je inicirao završetak.                                                                        |
 | `GeneralErrorReceived`  | Šalje se `cashdesk.error` za sve ostale greške protokola.            | `CashDeskErrorPayload` – `Code`, `Message`. Koristite za prikaz korisniku ili logovanje; može značiti da je server odbio komandu zbog stanja uređaja.                          |

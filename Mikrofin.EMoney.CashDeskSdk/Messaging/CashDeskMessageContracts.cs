@@ -116,7 +116,7 @@ public sealed class CashierLoginSuccessPayload
 {
     public CashDeskCashierInfo Cashier { get; set; } = new();
     public PaymentDetailsResponse? PendingPayment { get; set; }
-    public string? PaymentQrCode { get; set; }
+    public string? PaymentDeepLink { get; set; }
 }
 
 public sealed class CashDeskCashierInfo
@@ -131,7 +131,7 @@ public sealed class CashDeskCashierInfo
 public sealed class PaymentCreatedPayload
 {
     public PaymentDetailsResponse Payment { get; set; } = new();
-    public string PaymentQrCode { get; set; } = string.Empty;
+    public string PaymentDeepLink { get; set; } = string.Empty;
 }
 
 public sealed class PaymentCompletedPayload
