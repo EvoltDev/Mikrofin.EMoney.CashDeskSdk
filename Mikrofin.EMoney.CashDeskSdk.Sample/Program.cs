@@ -250,12 +250,10 @@ static Uri ResolveEndpoint(IConfiguration configuration)
         {
             return configUri;
         }
-
-        Console.WriteLine(
-            $"Invalid CashDesk:Endpoint '{endpointFromConfig}', falling back to ws://localhost:5000/ws/cashdesk.");
     }
 
-    return new Uri("ws://localhost:5000/ws/cashdesk");
+    throw new InvalidOperationException(
+        $"CashDesk:Endpoint '{endpointFromConfig}' is missing or invalid.");
 }
 
 static IConfiguration BuildConfiguration()
