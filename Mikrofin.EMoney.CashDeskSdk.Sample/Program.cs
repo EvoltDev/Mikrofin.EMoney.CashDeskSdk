@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Mikrofin.EMoney.CashDeskSdk;
@@ -127,7 +126,6 @@ catch (Exception ex)
 }
 finally
 {
-    await client.DisposeAsync();
     cts.Dispose();
 }
 
@@ -160,7 +158,8 @@ static async Task CreatePaymentFromConsoleAsync(CashDeskClient client, Cancellat
     var metadata = new List<CashDeskPaymentMetadata>();
     Console.Write("Add metadata entries? (y/N): ");
     var metadataAnswer = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(metadataAnswer) && metadataAnswer.StartsWith("y", StringComparison.OrdinalIgnoreCase))
+    if (!string.IsNullOrWhiteSpace(metadataAnswer) &&
+        metadataAnswer.StartsWith("y", StringComparison.OrdinalIgnoreCase))
     {
         while (true)
         {
@@ -204,7 +203,8 @@ static async Task CreatePaymentFromConsoleAsync(CashDeskClient client, Cancellat
 
             Console.Write("Unit price: ");
             var priceInput = Console.ReadLine();
-            if (!decimal.TryParse(priceInput, NumberStyles.Any, CultureInfo.InvariantCulture, out var unitPrice) || unitPrice <= 0)
+            if (!decimal.TryParse(priceInput, NumberStyles.Any, CultureInfo.InvariantCulture, out var unitPrice) ||
+                unitPrice <= 0)
             {
                 Console.WriteLine("Invalid price, skipping item.");
                 continue;
@@ -226,8 +226,10 @@ static async Task CreatePaymentFromConsoleAsync(CashDeskClient client, Cancellat
             amount,
             currency,
             lineItems,
-            metadata),
-        cancellationToken);
+            metadata
+        ),
+        cancellationToken
+    );
 }
 
 static async Task LoginFromConsoleAsync(CashDeskClient client, CancellationToken cancellationToken)
@@ -249,7 +251,8 @@ static Uri ResolveEndpoint(IConfiguration configuration)
             return configUri;
         }
 
-        Console.WriteLine($"Invalid CashDesk:Endpoint '{endpointFromConfig}', falling back to ws://localhost:5000/ws/cashdesk.");
+        Console.WriteLine(
+            $"Invalid CashDesk:Endpoint '{endpointFromConfig}', falling back to ws://localhost:5000/ws/cashdesk.");
     }
 
     return new Uri("ws://localhost:5000/ws/cashdesk");
