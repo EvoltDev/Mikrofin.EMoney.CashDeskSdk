@@ -3,8 +3,12 @@ on:
   push:
     tags:
       - '*.*.*'
+env:
+  PackageVersion: '${{ github.ref_name }}'
 jobs:
   publish:
+    permissions: 
+      id-token: write
     runs-on:
       - self-hosted
       - Linux
@@ -18,13 +22,18 @@ jobs:
           dotnet restore Mikrofin.EMoney.CashDeskSdk/Mikrofin.EMoney.CashDeskSdk.csproj
       - name: Build the project
         run: |
-          dotnet build Mikrofin.EMoney.CashDeskSdk/Mikrofin.EMoney.CashDeskSdk.csproj --configuration Release --no-restore
+          dotnet build Mikrofin.EMoney.CashDeskSdk/Mikrofin.EMoney.CashDeskSdk.csproj --configuration Release --no-restore /p:Version=${{ env.PackageVersion }}
       - name: Pack the project
         run: |
-          dotnet pack Mikrofin.EMoney.CashDeskSdk/Mikrofin.EMoney.CashDeskSdk.csproj --configuration Release --no-build --output ./nupkg
+          dotnet pack Mikrofin.EMoney.CashDeskSdk/Mikrofin.EMoney.CashDeskSdk.csproj --configuration Release --no-build --output ./nupkg /p:PackageVersion=${{ env.PackageVersion }}
+      - name: NuGet login
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: evolt-bot
       - name: Push NuGet package
         run: |
-          dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+          dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{steps.login.outputs.NUGET_API_KEY}}
       - name: Cleanup
         run: |
           rm -rf ./nupkg
