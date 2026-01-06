@@ -1,0 +1,31 @@
+name: Publish to NuGet
+on:
+  push:
+    tags:
+      - '*.*.*'
+jobs:
+  publish:
+    runs-on:
+      - self-hosted
+      - Linux
+      - X64
+      - mikrofin-builder
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Restore NuGet packages
+        run: |
+          dotnet restore Mikrofin.EMoney.CashDeskSdk/Mikrofin.EMoney.CashDeskSdk.csproj
+      - name: Build the project
+        run: |
+          dotnet build Mikrofin.EMoney.CashDeskSdk/Mikrofin.EMoney.CashDeskSdk.csproj --configuration Release --no-restore
+      - name: Pack the project
+        run: |
+          dotnet pack Mikrofin.EMoney.CashDeskSdk/Mikrofin.EMoney.CashDeskSdk.csproj --configuration Release --no-build --output ./nupkg
+      - name: Push NuGet package
+        run: |
+          dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+      - name: Cleanup
+        run: |
+          rm -rf ./nupkg
+          dotnet clean Mikrofin.EMoney.CashDeskSdk/Mikrofin.EMoney.CashDeskSdk.csproj
