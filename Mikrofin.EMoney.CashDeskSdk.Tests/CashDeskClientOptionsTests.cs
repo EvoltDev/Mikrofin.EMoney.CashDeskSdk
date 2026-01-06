@@ -8,7 +8,7 @@ public class CashDeskClientOptionsTests
     [Fact]
     public void Defaults_AreInitialized()
     {
-        var options = new CashDeskClientOptions(new Uri("ws://localhost/ws/cashdesk"));
+        var options = new CashDeskClientOptions(new Uri("wss://test-api-emoney.mfsoftware.com/ws/cashdesk"));
 
         Assert.Equal(TimeSpan.FromSeconds(30), options.KeepAliveInterval);
         Assert.Equal(32 * 1024, options.ReceiveBufferSize);
@@ -20,7 +20,7 @@ public class CashDeskClientOptionsTests
     [Fact]
     public void Headers_DictionaryIsCaseInsensitive()
     {
-        var options = new CashDeskClientOptions(new Uri("ws://localhost/ws/cashdesk"));
+        var options = new CashDeskClientOptions(new Uri("wss://test-api-emoney.mfsoftware.com/ws/cashdesk"));
 
         options.Headers["X-Test-Key"] = "value";
 

@@ -14,8 +14,8 @@ pretvoriti u UI obavijesti ili poslovnu logiku.
 
 - .NET 6.0+ ili .NET Standard kompatibilni runtime (biblioteka cilja netstandard2.0).
 - Kreiran račun za kasira u EMoney Core-u.
-- Pristup odgovarajućem WebSocket endpointu (`ws://localhost:5000/ws/cashdesk`
-  za lokalno, `wss://…` za dev/test/prod).
+- Pristup odgovarajućem WebSocket endpointu
+  (`wss://test-api-emoney.mfsoftware.com/ws/cashdesk` za testiranje).
 
 ## Instalacija (NuGet)
 
@@ -36,7 +36,7 @@ ili ručno kroz `PackageReference`:
 ## Konfiguracija klijenta
 
 ```csharp
-var options = new CashDeskClientOptions(new Uri("wss://<vas-host>/ws/cashdesk"))
+var options = new CashDeskClientOptions(new Uri("wss://test-api-emoney.mfsoftware.com/ws/cashdesk"))
 {
     KeepAliveInterval = TimeSpan.FromSeconds(30),
     ReceiveBufferSize = 32 * 1024,
@@ -47,7 +47,7 @@ await using var client = new CashDeskClient(options);
 ```
 
 ### Obavezni parametri
-- `Endpoint` – puni `ws://` ili `wss://` URL koji vodi do CashDesk endpointa.
+- `Endpoint` – puni `wss://` URL koji vodi do CashDesk endpointa.
 
 ### Često korištene postavke
 - `KeepAliveInterval` – period slanja pingova (default 30 sek).
@@ -151,10 +151,11 @@ Koristite ova polja direktno ili mapirajte na vlastite DTO klasse. SDK već kori
 
 ## Testiranje i okruženja
 
-- **Lokalno**: pokrenite sample API na `http://localhost:5000`, podesite
-  `appsettings.json` na `ws://localhost:5000/ws/cashdesk`.
+- **Sandbox/Test**: podesite `appsettings.json` ili varijable okruženja da ukažu
+  na `wss://test-api-emoney.mfsoftware.com/ws/cashdesk`.
 - **Development**: `DOTNET_ENVIRONMENT=Development` + `appsettings.Development.json`
-  gdje definišete `wss://<vas-dev-host>/ws/cashdesk` ili drugi URL.
+  gdje također možete postaviti `wss://test-api-emoney.mfsoftware.com/ws/cashdesk`
+  ili drugi URL.
 - **Production**: koristite `wss://` (TLS) URL koji obezbjeđuje vaš API gateway;
   provjerite da li treba dodatna autentifikacija na nivou zaglavlja.
 - **Automatski testovi**: možete koristiti testove iz Mikrofin.EMoney.CashDeskSdk.Tests.
