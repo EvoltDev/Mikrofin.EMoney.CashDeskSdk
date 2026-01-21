@@ -1,100 +1,134 @@
 ﻿# Mikrofin EMoney CashDesk SDK – Detaljna dokumentacija
 
-## Pregled
+## Šta je Mikrofin EMoney CashDesk SDK?
 
-`Mikrofin.EMoney.CashDeskSdk` je .NET Standard 2.0 biblioteka koja enkapsulira
-WebSocket protokol `ws(s)://<host>/ws/cashdesk` iz Mikrofin EMoney Core API-ja.
+Mikrofin.EMoney.CashDeskSdk je .NET biblioteka koja omogućava vašoj aplikaciji 
+da se poveže na Mikrofin EMoney Core API putem WebSocket konekcije i obavlja rad 
+sa blagajnom (Cash Desk).
 
-SDK održava jednu WebSocket vezu prema API-ju, šalje poruke kroz tipizirane
-metode (`LoginAsync`, `CreatePaymentAsync`, `CancelPaymentAsync`) i izlaže
-dogadjaje (`PaymentCreated`, `PaymentCompleted`, itd.) koje integracija može
-pretvoriti u UI obavijesti ili poslovnu logiku.
+Pomoću ovog SDK-a možete:
+- slati poruke uz pomoc vec definisanih metoda prema Mikrofin EMoney Core API-u:
+  - LoginAsync
+  - CreatePaymentAsync
+  - CancelPaymentAsync
 
-## Zahtjevi
+- primati jasno definisane događaje koje integracija može
+  pretvoriti u UI obavijesti ili poslovnu logiku:
+  - CashierLogin
+  - CashierLoginSuccess
+  - CashierLoginError
+  - PaymentCreate
+  - PaymentCreated
+  - PaymentCreateError
+  - PaymentCancel
+  - PaymentCompleted
+  - GeneralError
 
-- .NET 6.0+ ili .NET Standard kompatibilni runtime (biblioteka cilja netstandard2.0).
-- Kreiran račun za kasira u EMoney Core-u.
-- Pristup odgovarajućem WebSocket endpointu (`ws://localhost:5000/ws/cashdesk`
-  za lokalno, `wss://…` za dev/test/prod).
+SDK sakriva kompletnu WebSocket komunikaciju, tako da vi radite samo sa jasnim C# metodama i događajima.
 
-## Instalacija (NuGet)
+## Kako SDK radi?
+1.	SDK uspostavlja jednu stalnu WebSocket vezu prema EMoney API-ju
+2.	Vi šaljete zahtjeve metodama kao što su:
+   - LoginAsync
+   - CreatePaymentAsync
+   - CancelPaymentAsync
+3.	Server vam vraća odgovore kroz događaje (events), npr.:
+   - PaymentCreated
+   - PaymentCompleted
+4.	Te događaje možete koristiti za:
+   - prikaz QR koda,
+   - obavijesti korisniku,
+   - pokretanje poslovne logike u aplikaciji.
 
-SDK se distribuira isključivo kao NuGet paket. Uključite ga u projekat pomoću:
 
-```bash
+## Tehnički zahtjevi
+
+Prije nego počnete, potrebno je sljedeće:
+
+Softverski zahtjevi
+  - .NET 6.0 ili noviji
+  - Ili bilo koje runtime okruženje koje podržava .NET Standard 2.0
+
+Sistemski zahtjevi 
+  - Kreiran blagajnički (cashier) račun u EMoney Core sistemu
+  - Pristup WebSocket endpointu:
+    - Lokalno:
+
+      `ws://localhost:5000/ws/cashdesk`
+    - Dev / Test
+
+      `wss://test-api-emoney.mfsoftware.com/ws/cashdesk`
+    - Prod
+
+      `wss://<prod-host>/ws/cashdesk`
+
+## Instalacija SDK-a
+Opcija 1: preko .NET CLI (NuGet paket)
+
+```bash 
 dotnet add package Mikrofin.EMoney.CashDeskSdk
 ```
 
-ili ručno kroz `PackageReference`:
+Opcija 2: ručno u .csproj fajlu
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Mikrofin.EMoney.CashDeskSdk" Version="x.y.z" />
+    <PackageReference Include="Mikrofin.EMoney.CashDeskSdk" Version="x.y.z" />
 </ItemGroup>
 ```
 
-## Konfiguracija klijenta
-
+## Kreiranje i konfiguracija klijenta
+Prvi korak u kodu je konfiguracija CashDeskClient-a.
 ```csharp
-var options = new CashDeskClientOptions(new Uri("wss://<vas-host>/ws/cashdesk"))
+var options = new CashDeskClientOptions(
+    new Uri("wss://<your-host>/ws/cashdesk"))
 {
     KeepAliveInterval = TimeSpan.FromSeconds(30),
     ReceiveBufferSize = 32 * 1024,
-    DiagnosticLogger = message => logger.LogInformation("[CashDeskSdk] {Message}", message)
+    DiagnosticLogger = message =>
+        logger.LogInformation("[CashDeskSdk] {Message}", message)
 };
 
 await using var client = new CashDeskClient(options);
 ```
-
 ### Obavezni parametri
-- `Endpoint` – puni `ws://` ili `wss://` URL koji vodi do CashDesk endpointa.
+- `Endpoint` – puni `ws://` ili `wss://` Mikrofin EMoney Core API URL izloženog CashDesk endpointa.
 
-### Često korištene postavke
+### Dodatne postavke
 - `KeepAliveInterval` – period slanja pingova (default 30 sek).
 - `ReceiveBufferSize` – veličina buffera za prijem frame-ova (default 32 KB).
 - `Headers` – kolekcija custom zaglavlja (trenutno nije neophodna; koristite samo ako vam gateway naknadno zatraži dodatne header-e).
 - `DiagnosticLogger` – callback za logovanje lifecycle događaja (spajanje, diskonekcija).
 
+
 ## Tipičan tok integracije
 
-1. Instancirati `CashDeskClient` i pretplatiti se na događaje **prije** poziva
-   `ConnectAsync`.
-2. Pozvati `ConnectAsync(ct)` – uspostavlja WebSocket handshake.
-3. Poslati `LoginAsync(new CashierLoginRequest(accountId, userName, password), ct)`.
+1. Instancirati `CashDeskClient` (prethodno poglavlje)
+2. pretplatiti se na događaje
+```csharp
+client.CashierLoginSucceeded += (_, payload) =>
+{
+    Console.WriteLine($"Cashier {payload.Cashier.UserName} logged in.");
+};
+
+client.PaymentCompleted += (_, payload) =>
+{
+    Console.WriteLine($"Payment {payload.Payment.Id} completed.");
+};
+```
+2. Uspostaviti WebSocket konekciju
+```csharp
+await client.ConnectAsync(ct);
+```
+3. Prijaviti blagajnika (Login)
+```csharp
+await client.LoginAsync(
+    new CashierLoginRequest(accountId, username, password), ct);
+```
 4. Po potrebi pozivati:
    - `CreatePaymentAsync` sa linijama artikala, valutom i metapodacima.
    - `CancelPaymentAsync(paymentId)` za otkazivanje.
-5. Rukovati događajima koje server šalje (npr. `PaymentCreated`, `PaymentCompleted`).
-6. Na gašenje aplikacije ili gubitak konekcije pozvati `DisconnectAsync` i
-   `DisposeAsync` (ili koristiti `await using` kao u primjerima).
-
-## Kod primjer
-
 ```csharp
-await using var client = new CashDeskClient(options);
-
-client.CashierLoginSucceeded += (_, payload) =>
-{
-    Console.WriteLine($"Blagajnik {payload.Cashier.UserName} je prijavljen.");
-    if (payload.PendingPayment != null)
-    {
-        Console.WriteLine($"Postoji neriješena uplata: {payload.PendingPayment.Id}");
-    }
-};
-
-client.PaymentCreated += (_, payload) =>
-{
-    Console.WriteLine($"Nova uplata {payload.Payment.Id}, QR: {payload.PaymentDeepLink}");
-};
-
-client.PaymentCreateFailed += (_, payload) =>
-{
-    Console.WriteLine($"Greška {payload.Code}: {payload.Message}");
-};
-
-await client.ConnectAsync(ct);
-await client.LoginAsync(new CashierLoginRequest(accountId, username, password), ct);
-
 await client.CreatePaymentAsync(
     new CashDeskPaymentCreateRequest(
         totalAmount: 25.00m,
@@ -104,7 +138,17 @@ await client.CreatePaymentAsync(
             new CashDeskPaymentLineItemRequest("Brasno", 25.00m)
         },
         paymentMetadata: Array.Empty<CashDeskPaymentMetadata>()),
-    ct);
+    cancellationToken);
+```
+```csharp
+await client.CancelPaymentAsync(paymentId, cts.Token);
+```
+
+5. Rukovati događajima koje server šalje (npr. `PaymentCreated`, `PaymentCompleted`).
+6. Na gašenje aplikacije ili gubitak konekcije pozvati `DisconnectAsync` i
+   `DisposeAsync` (ili koristiti `await using` kao u primjerima).
+```csharp
+await client.DisconnectAsync();
 ```
 
 ## Događaji
@@ -119,23 +163,48 @@ await client.CreatePaymentAsync(
 | `GeneralErrorReceived`  | Šalje se `cashdesk.error` za sve ostale greške protokola.            | `CashDeskErrorPayload` – `Code`, `Message`. Koristite za prikaz korisniku ili logovanje; može značiti da je server odbio komandu zbog stanja uređaja.                          |
 | `ConnectionClosed`      | Konekcija zatvorena sa bilo koje strane.                             | `ConnectionClosedEventArgs` – `Status` (npr. `NormalClosure`, `AbnormalClosure`), `Description` (poruka servera ili izuzetak). Korisno za prikaz i za retry logiku.            |
 
-### Obavezna polja po zahtevima
+### Obavezna polja po zahtjevima
 
-- `CashierLoginRequest`: `AccountId`, `UserName`, `Password` su obavezni i nikada se ne šalju prazni.
+- `CashierLoginRequest`: 
+  - `AccountId` - string (obavezno)
+  - `UserName` - string (obavezno)
+  - `Password` - string (obavezno)
+
 - `CashDeskPaymentCreateRequest`: 
-  - `TotalAmount` (decimal) koji je obavezan i `Currency` (default `BAM`).
-  - `LineItems` je opcionalan. Svaki `CashDeskPaymentLineItemRequest` ima obavezna polja `Name`, `UnitPrice` i opcionalno `Quantity` (default 1).
-  - `PaymentMetadata` može biti prazna lista. Svaki `CashDeskPaymentMetadata` ima `Key`, `Value`, i opcioni `DisplayToUser` (default `false`).
-- `CashDeskPaymentCancelRequest`: zahtijeva validan `PaymentId` (Guid) prethodno vraćen od servera.
+  - `TotalAmount` - decimal (obavezan)
+  - `Currency` - string (default `BAM`).
+  - `LineItems` - `CashDeskPaymentLineItemRequest` (opcionalan)
+    - `Name` - string (obavezan)
+    - `UnitPrice` - decimal (obavezan)
+    - `Quantity` - int (default 1)
+  - `PaymentMetadata` - `CashDeskPaymentMetadata` (može biti prazna lista) 
+    - `Key` - string
+    - `Value` - string
+    - `DisplayToUser` - bool (default `false`).
+- `CashDeskPaymentCancelRequest`:
+  - `PaymentId` - Guid (obavezan)
 
 ### Struktura tipova
 
 - `PaymentDetailsResponse` (server response) sadrži:
-  - `Id` (Guid), `Amount`, `Currency`, `Status` (`Pending`, `Successful`, `Canceled`).
-  - `Location` (`PaymentLocationInfo` sa `Name`, `Address`).
-  - `CreatedAt` (`JsonElement` – server šalje datum u ISO formatu), `LineItems` (lista `PaymentLineItemResponse`), `Metadata` (lista `PaymentMetadataResponse`).
-- `PaymentLineItemResponse` uključuje `Id`, `Name`, `Quantity`, `UnitPrice`, `Amount`.
-- `PaymentMetadataResponse` ima `Key`, `Value`, `DisplayToUser`.
+  - `Id` - Guid
+  - `Amount` - decimal
+  - `Currency` - string
+  - `Status` - enum (`Pending`, `Successful`, `Canceled`)
+  - `Location` - `PaymentLocationInfo` 
+    - `Name` - string
+    - `Address` - string
+  - `CreatedAt` - `JsonElement` (server šalje datum u ISO formatu)
+  - `LineItems` (lista `PaymentLineItemResponse`)
+    - `Id` - Guid
+    - `Name` - string
+    - `Quantity` - int
+    - `UnitPrice` - decimal
+    - `Amount` - decimal
+  - `Metadata` (lista `PaymentMetadataResponse`)
+    - `Key` - string
+    - `Value` - string
+    - `DisplayToUser` - bool
 
 Koristite ova polja direktno ili mapirajte na vlastite DTO klasse. SDK već koristi `System.Text.Json` sa `JsonNamingPolicy.CamelCase`, tako da su nazivi polja identični onome što vidite u JSON payload-ima.
 
@@ -154,7 +223,7 @@ Koristite ova polja direktno ili mapirajte na vlastite DTO klasse. SDK već kori
 - **Lokalno**: pokrenite sample API na `http://localhost:5000`, podesite
   `appsettings.json` na `ws://localhost:5000/ws/cashdesk`.
 - **Development**: `DOTNET_ENVIRONMENT=Development` + `appsettings.Development.json`
-  gdje definišete `wss://<vas-dev-host>/ws/cashdesk` ili drugi URL.
+  gdje definišete `wss://test-api-emoney.mfsoftware.com/ws/cashdesk` ili drugi URL.
 - **Production**: koristite `wss://` (TLS) URL koji obezbjeđuje vaš API gateway;
   provjerite da li treba dodatna autentifikacija na nivou zaglavlja.
 - **Automatski testovi**: možete koristiti testove iz Mikrofin.EMoney.CashDeskSdk.Tests.
@@ -163,3 +232,4 @@ Koristite ova polja direktno ili mapirajte na vlastite DTO klasse. SDK već kori
 
 - `Mikrofin.EMoney.CashDeskSdk.Sample` – konzolna aplikacija koja demonstrira
   sve funkcionalnosti (prijava, kreiranje uplata, praćenje događaja).
+- Github repo: https://github.com/EvoltDev/Mikrofin.EMoney.CashDeskSdk/tree/main/Mikrofin.EMoney.CashDeskSdk.Sample
