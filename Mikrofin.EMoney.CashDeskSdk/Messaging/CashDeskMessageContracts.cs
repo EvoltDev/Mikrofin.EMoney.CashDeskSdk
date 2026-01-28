@@ -15,6 +15,18 @@ internal static class CashDeskMessageTypes
     public const string PaymentCreateError = "payment.create.error";
     public const string PaymentCancel = "payment.cancel";
     public const string PaymentCompleted = "payment.completed";
+    public const string CashInCreate = "cashIn.create";
+    public const string CashInCreated = "cashIn.created";
+    public const string CashInCancel = "cashIn.cancel";
+    public const string CashInCompleted = "cashIn.completed";
+    public const string CashInCreateError = "cashIn.create.error";
+    public const string CashOutCreate = "cashOut.create";
+    public const string CashOutCreated = "cashOut.created";
+    public const string CashOutCancel = "cashOut.cancel";
+    public const string CashOutComplete = "cashOut.complete";
+    public const string CashOutCompleted = "cashOut.completed";
+    public const string CashOutCreateError = "cashOut.create.error";
+    public const string CashOutPaidByUser = "cashout.paid";
     public const string GeneralError = "cashdesk.error";
 }
 
@@ -112,6 +124,63 @@ public sealed class CashDeskPaymentCancelRequest
     public Guid PaymentId { get; }
 }
 
+public sealed class CashDeskCashInCreateRequest
+{
+    public CashDeskCashInCreateRequest(
+        decimal totalAmount,
+        string currency)
+    {
+        TotalAmount = totalAmount;
+        Currency = currency;
+    }
+
+    public decimal TotalAmount { get; }
+    public string Currency { get; }
+}
+
+public sealed class CashDeskCashOutCreateRequest
+{
+    public CashDeskCashOutCreateRequest(
+        decimal totalAmount,
+        string currency)
+    {
+        TotalAmount = totalAmount;
+        Currency = currency;
+    }
+
+    public decimal TotalAmount { get; }
+    public string Currency { get; }
+}
+
+public sealed class CashDeskCashOutCompleteRequest
+{
+    public CashDeskCashOutCompleteRequest(Guid cashOutId)
+    {
+        CashOutId = cashOutId;
+    }
+
+    public Guid CashOutId { get; }
+}
+
+public sealed class CashDeskCashInCancelRequest
+{
+    public CashDeskCashInCancelRequest(Guid cashInId)
+    {
+        CashInId = cashInId;
+    }
+
+    public Guid CashInId { get; }
+}
+
+public sealed class CashDeskCashOutCancelRequest
+{
+    public CashDeskCashOutCancelRequest(Guid cashOutId)
+    {
+        CashOutId = cashOutId;
+    }
+
+    public Guid CashOutId { get; }
+}
 public sealed class CashierLoginSuccessPayload
 {
     public CashDeskCashierInfo Cashier { get; set; } = new();
@@ -140,6 +209,47 @@ public sealed class PaymentCompletedPayload
     public Guid UserId { get; set; }
 }
 
+public sealed class CashInCreatedPayload
+{
+    public CashInDetailsResponse CashIn { get; set; } = new();
+    public string CashInDeepLink { get; set; } = string.Empty;
+}
+
+public sealed class CashInCompletedPayload
+{
+    public CashInDetailsResponse CashIn { get; set; } = new();
+    public Guid UserId { get; set; }
+}
+
+public sealed class CashInCreateErrorPayload : CashDeskErrorPayload
+{
+    public CashInDetailsResponse? PendingCashIn { get; set; }
+}
+
+public sealed class CashOutCreatedPayload
+{
+    public CashOutDetailsResponse CashOut { get; set; } = new();
+    public string CashOutDeepLink { get; set; } = string.Empty;
+}
+
+public sealed class CashOutCreateErrorPayload : CashDeskErrorPayload
+{
+    public CashOutDetailsResponse? PendingCashOut { get; set; }
+
+}
+
+public sealed class CashOutPaidByUserPayload
+{
+    public CashOutDetailsResponse CashOut { get; set; } = new();
+    public Guid UserId { get; set; }
+}
+
+public sealed class CashOutCompletedPayload
+{
+    public CashOutDetailsResponse CashOut { get; set; } = new();
+    public Guid UserId { get; set; }
+}
+
 public class CashDeskErrorPayload
 {
     public string Code { get; set; } = string.Empty;
@@ -158,13 +268,33 @@ public sealed class PaymentDetailsResponse
     public string Currency { get; set; } = string.Empty;
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public PaymentStatus Status { get; set; }
-    public PaymentLocationInfo Location { get; set; } = new();
+    public LocationInfo Location { get; set; } = new();
     public JsonElement CreatedAt { get; set; }
     public IReadOnlyList<PaymentLineItemResponse> LineItems { get; set; } = Array.Empty<PaymentLineItemResponse>();
     public IReadOnlyList<PaymentMetadataResponse> Metadata { get; set; } = Array.Empty<PaymentMetadataResponse>();
 }
 
-public sealed class PaymentLocationInfo
+public sealed class CashOutDetailsResponse
+{
+    public Guid Id { get; set; }
+    public decimal Amount { get; set; }
+    public string Currency { get; set; } = string.Empty;
+    public CashOutStatus Status { get; set; }
+    public LocationInfo Location { get; set; }
+    public JsonElement CreatedAt { get; set; }
+}
+
+public sealed class CashInDetailsResponse
+{
+    public Guid Id { get; set; }
+    public decimal Amount { get; set; }
+    public string Currency { get; set; } = string.Empty;
+    public CashInStatus Status { get; set; }
+    public LocationInfo Location { get; set; }
+    public JsonElement CreatedAt { get; set; }
+}
+
+public sealed class LocationInfo
 {
     public string? Name { get; set; }
     public string? Address { get; set; }
@@ -191,4 +321,19 @@ public enum PaymentStatus : byte
     Pending = 1,
     Successful = 2,
     Canceled = 3,
+}
+
+public enum CashOutStatus : byte
+{
+    Pending = 0,
+    UserPaid = 1,
+    Completed = 2,
+    Canceled = 3
+}
+
+public enum CashInStatus : byte
+{
+    Pending = 0,
+    Completed = 1,
+    Canceled = 2
 }

@@ -53,6 +53,48 @@ client.PaymentCreateFailed += (_, payload) =>
     DumpPayload("payment.create.error", payload);
 };
 
+client.CashInCreated += (_, payload) =>
+{
+    Console.WriteLine($"CashIn created: {payload.CashIn.Id}");
+    DumpPayload("cashIn.created", payload);
+};
+
+client.CashInCompleted += (_, payload) =>
+{
+    Console.WriteLine($"CashIn {payload.CashIn.Id} completed");
+    DumpPayload("cashIn.completed", payload);
+};
+
+client.CashInCreateFailed += (_, payload) =>
+{
+    Console.WriteLine($"CashIn creation failed: {payload.Code} - {payload.Message}");
+    DumpPayload("cashIn.create.error", payload);
+};
+
+client.CashOutPaidByUser += (_, payload) =>
+{
+    Console.WriteLine($"CashOut {payload.CashOut.Id} paid by User {payload.UserId}");
+    DumpPayload("cashout.paid", payload);
+};
+
+client.CashOutCreated += (_, payload) =>
+{
+    Console.WriteLine($"CashOut created: {payload.CashOut.Id}");
+    DumpPayload("cashOut.created", payload);
+};
+
+client.CashOutCompleted += (_, payload) =>
+{
+    Console.WriteLine($"CashOut {payload.CashOut.Id} completed");
+    DumpPayload("cashOut.completed", payload);
+};
+
+client.CashOutCreateFailed += (_, payload) =>
+{
+    Console.WriteLine($"CashOut creation failed: {payload.Code} - {payload.Message}");
+    DumpPayload("cashOut.create.error", payload);
+};
+
 client.GeneralErrorReceived += (_, payload) =>
 {
     Console.WriteLine($"General error: {payload.Code} - {payload.Message}");
@@ -84,10 +126,43 @@ try
             continue;
         }
 
-        if (line.Equals("create", StringComparison.OrdinalIgnoreCase))
+        if (line.StartsWith("create", StringComparison.OrdinalIgnoreCase))
         {
-            await CreatePaymentFromConsoleAsync(client, cts.Token);
-            continue;
+            if (line.EndsWith("Payment", StringComparison.OrdinalIgnoreCase))
+            {
+                await CreatePaymentFromConsoleAsync(client, cts.Token);
+                continue; 
+            }
+            if (line.EndsWith("CashIn", StringComparison.OrdinalIgnoreCase))
+            {
+                await CreateCashInFromConsoleAsync(client, cts.Token);
+                continue;
+            }
+            if (line.EndsWith("CashOut", StringComparison.OrdinalIgnoreCase))
+            {
+                await CreateCashOutFromConsoleAsync(client, cts.Token);
+                continue;
+            }
+            
+        }
+
+        if (line.StartsWith("complete", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            string? idInput = parts.Length > 1 ? parts[1] : null;
+            if (idInput == null)
+            {
+                Console.Write("Enter cashOut ID to complte: ");
+                idInput = Console.ReadLine();
+            }
+
+            if (Guid.TryParse(idInput, out var id))
+            {
+                await client.CompleteCashOutAsync(id, cts.Token);
+                Console.WriteLine($"Complete cashOut request sent for {id}");  
+                continue;
+            }
+
         }
 
         if (line.StartsWith("cancel", StringComparison.OrdinalIgnoreCase))
@@ -96,14 +171,30 @@ try
             string? idInput = parts.Length > 1 ? parts[1] : null;
             if (idInput == null)
             {
-                Console.Write("Enter payment ID to cancel: ");
+                Console.Write("Enter payment or cashIn or cashOut ID to cancel: ");
                 idInput = Console.ReadLine();
             }
 
-            if (Guid.TryParse(idInput, out var paymentId))
+            if (Guid.TryParse(idInput, out var id))
             {
-                await client.CancelPaymentAsync(paymentId, cts.Token);
-                Console.WriteLine($"Cancel request sent for {paymentId}");
+                if (line.EndsWith("Payment", StringComparison.OrdinalIgnoreCase))
+                {
+                    await client.CancelPaymentAsync(id, cts.Token);
+                    Console.WriteLine($"Cancel Payment request sent for {id}");  
+                    continue;
+                } 
+                if (line.EndsWith("CashIn", StringComparison.OrdinalIgnoreCase))
+                {
+                    await client.CancelCashInAsync(id, cts.Token);
+                    Console.WriteLine($"Cancel CashIn request sent for {id}");  
+                    continue;
+                }
+                if (line.EndsWith("CashOut", StringComparison.OrdinalIgnoreCase))
+                {
+                    await client.CancelCashOutAsync(id, cts.Token);
+                    Console.WriteLine($"Cancel CashOut request sent for {id}");
+                    continue;
+                }
             }
             else
             {
@@ -227,6 +318,58 @@ static async Task CreatePaymentFromConsoleAsync(CashDeskClient client, Cancellat
             currency,
             lineItems,
             metadata
+        ),
+        cancellationToken
+    );
+}
+
+static async Task CreateCashInFromConsoleAsync(CashDeskClient client, CancellationToken cancellationToken)
+{
+    Console.Write("Amount: ");
+    var amountInput = Console.ReadLine();
+    if (!decimal.TryParse(amountInput, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount) || amount <= 0)
+    {
+        Console.WriteLine("Invalid amount.");
+        return;
+    }
+
+    Console.Write("Currency [BAM]: ");
+    var currency = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(currency))
+    {
+        currency = "BAM";
+    }
+
+    await client.CreateCashInAsync(
+        new CashDeskCashInCreateRequest(
+            amount,
+            currency
+        ),
+        cancellationToken
+    );
+}
+
+static async Task CreateCashOutFromConsoleAsync(CashDeskClient client, CancellationToken cancellationToken)
+{
+    Console.Write("Amount: ");
+    var amountInput = Console.ReadLine();
+    if (!decimal.TryParse(amountInput, NumberStyles.Any, CultureInfo.InvariantCulture, out var amount) || amount <= 0)
+    {
+        Console.WriteLine("Invalid amount.");
+        return;
+    }
+
+    Console.Write("Currency [BAM]: ");
+    var currency = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(currency))
+    {
+        currency = "BAM";
+    }
+
+    await client.CreateCashOutAsync(
+        new CashDeskCashOutCreateRequest(
+            amount,
+            currency
         ),
         cancellationToken
     );

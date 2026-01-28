@@ -38,6 +38,13 @@ public sealed class CashDeskClient : IAsyncDisposable
     public event EventHandler<PaymentCreatedPayload>? PaymentCreated;
     public event EventHandler<PaymentCompletedPayload>? PaymentCompleted;
     public event EventHandler<PaymentCreateErrorPayload>? PaymentCreateFailed;
+    public event EventHandler<CashInCreatedPayload>? CashInCreated;
+    public event EventHandler<CashInCompletedPayload>? CashInCompleted;
+    public event EventHandler<CashInCreateErrorPayload>? CashInCreateFailed;
+    public event EventHandler<CashOutCreatedPayload>? CashOutCreated;
+    public event EventHandler<CashOutCompletedPayload>? CashOutCompleted;
+    public event EventHandler<CashOutPaidByUserPayload>? CashOutPaidByUser;
+    public event EventHandler<CashOutCreateErrorPayload>? CashOutCreateFailed;
     public event EventHandler<CashDeskErrorPayload>? GeneralErrorReceived;
     public event EventHandler<ConnectionClosedEventArgs>? ConnectionClosed;
 
@@ -113,6 +120,39 @@ public sealed class CashDeskClient : IAsyncDisposable
     public Task CancelPaymentAsync(Guid paymentId, CancellationToken cancellationToken = default)
     {
         return SendAsync(CashDeskMessageTypes.PaymentCancel, new CashDeskPaymentCancelRequest(paymentId), cancellationToken);
+    }
+    
+    public Task CreateCashInAsync(CashDeskCashInCreateRequest request, CancellationToken cancellationToken = default)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+        return SendAsync(CashDeskMessageTypes.CashInCreate, request, cancellationToken);
+    }
+    
+    public Task CreateCashOutAsync(CashDeskCashOutCreateRequest request, CancellationToken cancellationToken = default)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+        return SendAsync(CashDeskMessageTypes.CashOutCreate, request, cancellationToken);
+    }
+    
+    public Task CompleteCashOutAsync(Guid cashOutId, CancellationToken cancellationToken = default)
+    {
+        return SendAsync(CashDeskMessageTypes.CashOutComplete, new CashDeskCashOutCompleteRequest(cashOutId), cancellationToken);
+    }
+    
+    public Task CancelCashInAsync(Guid cashInId, CancellationToken cancellationToken = default)
+    {
+        return SendAsync(CashDeskMessageTypes.CashInCancel, new CashDeskCashInCancelRequest(cashInId), cancellationToken);
+    }
+    
+    public Task CancelCashOutAsync(Guid cashOutId, CancellationToken cancellationToken = default)
+    {
+        return SendAsync(CashDeskMessageTypes.CashOutCancel, new CashDeskCashOutCancelRequest(cashOutId), cancellationToken);
     }
 
     public async ValueTask DisposeAsync()
@@ -199,6 +239,27 @@ public sealed class CashDeskClient : IAsyncDisposable
                     break;
                 case CashDeskMessageTypes.PaymentCreateError:
                     Dispatch(envelope, PaymentCreateFailed);
+                    break;
+                case CashDeskMessageTypes.CashInCreated:
+                    Dispatch(envelope, CashInCreated);
+                    break;
+                case CashDeskMessageTypes.CashInCompleted:
+                    Dispatch(envelope, CashInCompleted);
+                    break;
+                case CashDeskMessageTypes.CashInCreateError:
+                    Dispatch(envelope, CashInCreateFailed);
+                    break;
+                case CashDeskMessageTypes.CashOutCreated:
+                    Dispatch(envelope, CashOutCreated);
+                    break;
+                case CashDeskMessageTypes.CashOutPaidByUser:
+                    Dispatch(envelope, CashOutPaidByUser);
+                    break;
+                case CashDeskMessageTypes.CashOutCompleted:
+                    Dispatch(envelope, CashOutCompleted);
+                    break;
+                case CashDeskMessageTypes.CashOutCreateError:
+                    Dispatch(envelope, CashOutCreateFailed);
                     break;
                 case CashDeskMessageTypes.GeneralError:
                     Dispatch(envelope, GeneralErrorReceived);
