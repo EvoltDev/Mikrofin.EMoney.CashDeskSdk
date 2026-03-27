@@ -5,6 +5,11 @@ on:
     branches:
       - main
       - develop
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
 
 jobs:
   check-title:
