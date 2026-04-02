@@ -25,7 +25,6 @@ repos:
   - id: detect-private-key
   - id: end-of-file-fixer
   - id: mixed-line-ending
-  - id: pretty-format-json
   - id: trailing-whitespace
 - repo: https://github.com/rhysd/actionlint
   rev: 393031adb9afb225ee52ae2ccd7a5af5525e03e8 # v1.7.11
