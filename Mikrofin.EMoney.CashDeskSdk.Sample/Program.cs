@@ -47,6 +47,12 @@ client.PaymentCompleted += (_, payload) =>
     DumpPayload("payment.completed", payload);
 };
 
+client.PaymentCanceled += (_, payload) =>
+{
+    Console.WriteLine($"Payment {payload.Payment.Id} canceled");
+    DumpPayload("payment.canceled", payload);
+};
+
 client.PaymentCreateFailed += (_, payload) =>
 {
     Console.WriteLine($"Payment creation failed: {payload.Code} - {payload.Message}");
@@ -63,6 +69,12 @@ client.CashInCompleted += (_, payload) =>
 {
     Console.WriteLine($"CashIn {payload.CashIn.Id} completed");
     DumpPayload("cashIn.completed", payload);
+};
+
+client.CashInCanceled += (_, payload) =>
+{
+    Console.WriteLine($"CashIn {payload.CashIn.Id} canceled");
+    DumpPayload("cashIn.canceled", payload);
 };
 
 client.CashInCreateFailed += (_, payload) =>
@@ -87,6 +99,12 @@ client.CashOutCompleted += (_, payload) =>
 {
     Console.WriteLine($"CashOut {payload.CashOut.Id} completed");
     DumpPayload("cashOut.completed", payload);
+};
+
+client.CashOutCanceled += (_, payload) =>
+{
+    Console.WriteLine($"CashOut {payload.CashOut.Id} canceled");
+    DumpPayload("cashOut.canceled", payload);
 };
 
 client.CashOutCreateFailed += (_, payload) =>
@@ -131,7 +149,7 @@ try
             if (line.EndsWith("Payment", StringComparison.OrdinalIgnoreCase))
             {
                 await CreatePaymentFromConsoleAsync(client, cts.Token);
-                continue; 
+                continue;
             }
             if (line.EndsWith("CashIn", StringComparison.OrdinalIgnoreCase))
             {
@@ -143,7 +161,7 @@ try
                 await CreateCashOutFromConsoleAsync(client, cts.Token);
                 continue;
             }
-            
+
         }
 
         if (line.StartsWith("complete", StringComparison.OrdinalIgnoreCase))
@@ -159,7 +177,7 @@ try
             if (Guid.TryParse(idInput, out var id))
             {
                 await client.CompleteCashOutAsync(id, cts.Token);
-                Console.WriteLine($"Complete cashOut request sent for {id}");  
+                Console.WriteLine($"Complete cashOut request sent for {id}");
                 continue;
             }
 
@@ -180,13 +198,13 @@ try
                 if (line.EndsWith("Payment", StringComparison.OrdinalIgnoreCase))
                 {
                     await client.CancelPaymentAsync(id, cts.Token);
-                    Console.WriteLine($"Cancel Payment request sent for {id}");  
+                    Console.WriteLine($"Cancel Payment request sent for {id}");
                     continue;
-                } 
+                }
                 if (line.EndsWith("CashIn", StringComparison.OrdinalIgnoreCase))
                 {
                     await client.CancelCashInAsync(id, cts.Token);
-                    Console.WriteLine($"Cancel CashIn request sent for {id}");  
+                    Console.WriteLine($"Cancel CashIn request sent for {id}");
                     continue;
                 }
                 if (line.EndsWith("CashOut", StringComparison.OrdinalIgnoreCase))

@@ -14,15 +14,18 @@ internal static class CashDeskMessageTypes
     public const string PaymentCreated = "payment.created";
     public const string PaymentCreateError = "payment.create.error";
     public const string PaymentCancel = "payment.cancel";
+    public const string PaymentCanceled = "payment.canceled";
     public const string PaymentCompleted = "payment.completed";
     public const string CashInCreate = "cashIn.create";
     public const string CashInCreated = "cashIn.created";
     public const string CashInCancel = "cashIn.cancel";
+    public const string CashInCanceled = "cashIn.canceled";
     public const string CashInCompleted = "cashIn.completed";
     public const string CashInCreateError = "cashIn.create.error";
     public const string CashOutCreate = "cashOut.create";
     public const string CashOutCreated = "cashOut.created";
     public const string CashOutCancel = "cashOut.cancel";
+    public const string CashOutCanceled = "cashOut.canceled";
     public const string CashOutComplete = "cashOut.complete";
     public const string CashOutCompleted = "cashOut.completed";
     public const string CashOutCreateError = "cashOut.create.error";
@@ -209,6 +212,11 @@ public sealed class PaymentCompletedPayload
     public Guid UserId { get; set; }
 }
 
+public sealed class PaymentCanceledPayload
+{
+    public PaymentDetailsResponse Payment { get; set; } = new();
+}
+
 public sealed class CashInCreatedPayload
 {
     public CashInDetailsResponse CashIn { get; set; } = new();
@@ -219,6 +227,11 @@ public sealed class CashInCompletedPayload
 {
     public CashInDetailsResponse CashIn { get; set; } = new();
     public Guid UserId { get; set; }
+}
+
+public sealed class CashInCanceledPayload
+{
+    public CashInDetailsResponse CashIn { get; set; } = new();
 }
 
 public sealed class CashInCreateErrorPayload : CashDeskErrorPayload
@@ -248,6 +261,11 @@ public sealed class CashOutCompletedPayload
 {
     public CashOutDetailsResponse CashOut { get; set; } = new();
     public Guid UserId { get; set; }
+}
+
+public sealed class CashOutCanceledPayload
+{
+    public CashOutDetailsResponse CashOut { get; set; } = new();
 }
 
 public class CashDeskErrorPayload
