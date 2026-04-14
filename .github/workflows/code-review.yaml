@@ -1,0 +1,27 @@
+name: Code review
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  review:
+    # Only run when:
+    #   - comment is on a PR (not a plain issue)
+    #   - comment contains the trigger phrase
+    #   - PR is not a draft
+    #   - PR does not have the skip label
+    if: |
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '/review') &&
+      github.event.issue.draft == false &&
+      !contains(github.event.issue.labels.*.name, 'skip-ai-review')
+    uses: EvoltDev/evolt-internal-workflow/.github/workflows/code-review-shared.yaml@develop
+    secrets: inherit
+    with:
+      trigger_comment: ${{ github.event.comment.body }}
+      runner: ${{ vars.RUNNER_CODE_REVIEW || vars.RUNNER_DEFAULT }}
+
+    # Optional overrides — delete lines you don't need:
+    # with:
+    #   model: claude-sonnet-4-6      # default, no need to set
+    #   max_turns: 10                 # increase for large PRs (default: 10)
