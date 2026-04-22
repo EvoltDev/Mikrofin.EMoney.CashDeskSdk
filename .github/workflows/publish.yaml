@@ -7,15 +7,16 @@ env:
   PackageVersion: '${{ github.ref_name }}'
 jobs:
   publish:
-    permissions: 
+    permissions:
       id-token: write
     runs-on:
       - ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
       - name: Restore NuGet packages
@@ -32,6 +33,20 @@ jobs:
         id: login
         with:
           user: ${{ secrets.NUGET_USERNAME }}
+
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        env:
+          TRIVY_DISABLE_VEX_NOTICE: true
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+          format: table
+
       - name: Push NuGet package
         run: |
           dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{steps.login.outputs.NUGET_API_KEY}}
