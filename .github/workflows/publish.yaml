@@ -3,6 +3,7 @@ on:
   push:
     tags:
       - '*.*.*'
+  pull_request:
 env:
   PackageVersion: '${{ github.ref_name }}'
 jobs:
@@ -48,6 +49,7 @@ jobs:
           format: table
 
       - name: Push NuGet package
+        if: github.event_name != 'pull_request'
         run: |
           dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{steps.login.outputs.NUGET_API_KEY}}
       - name: Cleanup
