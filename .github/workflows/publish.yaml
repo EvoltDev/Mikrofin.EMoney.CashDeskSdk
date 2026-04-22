@@ -5,7 +5,7 @@ on:
       - '*.*.*'
   pull_request:
 env:
-  PackageVersion: '${{ github.ref_name }}'
+  PackageVersion: ${{ github.event_name == 'pull_request' && format('0.0.0-pr.{0}', github.run_number) || github.ref_name }}
 jobs:
   publish:
     permissions:
