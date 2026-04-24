@@ -38,16 +38,14 @@ public sealed class CashDeskClient : IAsyncDisposable
     public event EventHandler<PaymentCreatedPayload>? PaymentCreated;
     public event EventHandler<PaymentCompletedPayload>? PaymentCompleted;
     public event EventHandler<PaymentCanceledPayload>? PaymentCanceled;
-    public event EventHandler<PaymentCreateErrorPayload>? PaymentCreateFailed;
+    public event EventHandler<TransactionCreateErrorPayload>? TransactionCreateFailed;
     public event EventHandler<CashInCreatedPayload>? CashInCreated;
     public event EventHandler<CashInCompletedPayload>? CashInCompleted;
     public event EventHandler<CashInCanceledPayload>? CashInCanceled;
-    public event EventHandler<CashInCreateErrorPayload>? CashInCreateFailed;
     public event EventHandler<CashOutCreatedPayload>? CashOutCreated;
     public event EventHandler<CashOutCompletedPayload>? CashOutCompleted;
     public event EventHandler<CashOutCanceledPayload>? CashOutCanceled;
     public event EventHandler<CashOutPaidByUserPayload>? CashOutPaidByUser;
-    public event EventHandler<CashOutCreateErrorPayload>? CashOutCreateFailed;
     public event EventHandler<CashDeskErrorPayload>? GeneralErrorReceived;
     public event EventHandler<ConnectionClosedEventArgs>? ConnectionClosed;
 
@@ -243,8 +241,8 @@ public sealed class CashDeskClient : IAsyncDisposable
                 case CashDeskMessageTypes.PaymentCanceled:
                     Dispatch(envelope, PaymentCanceled);
                     break;
-                case CashDeskMessageTypes.PaymentCreateError:
-                    Dispatch(envelope, PaymentCreateFailed);
+                case CashDeskMessageTypes.TransactionCreateError:
+                    Dispatch(envelope, TransactionCreateFailed);
                     break;
                 case CashDeskMessageTypes.CashInCreated:
                     Dispatch(envelope, CashInCreated);
@@ -254,9 +252,6 @@ public sealed class CashDeskClient : IAsyncDisposable
                     break;
                 case CashDeskMessageTypes.CashInCanceled:
                     Dispatch(envelope, CashInCanceled);
-                    break;
-                case CashDeskMessageTypes.CashInCreateError:
-                    Dispatch(envelope, CashInCreateFailed);
                     break;
                 case CashDeskMessageTypes.CashOutCreated:
                     Dispatch(envelope, CashOutCreated);
@@ -269,9 +264,6 @@ public sealed class CashDeskClient : IAsyncDisposable
                     break;
                 case CashDeskMessageTypes.CashOutCanceled:
                     Dispatch(envelope, CashOutCanceled);
-                    break;
-                case CashDeskMessageTypes.CashOutCreateError:
-                    Dispatch(envelope, CashOutCreateFailed);
                     break;
                 case CashDeskMessageTypes.GeneralError:
                     Dispatch(envelope, GeneralErrorReceived);

@@ -53,10 +53,10 @@ client.PaymentCanceled += (_, payload) =>
     DumpPayload("payment.canceled", payload);
 };
 
-client.PaymentCreateFailed += (_, payload) =>
+client.TransactionCreateFailed += (_, payload) =>
 {
-    Console.WriteLine($"Payment creation failed: {payload.Code} - {payload.Message}");
-    DumpPayload("payment.create.error", payload);
+    Console.WriteLine($"Transaction creation failed: {payload.Code} - {payload.Message}");
+    DumpPayload("transaction.create.error", payload);
 };
 
 client.CashInCreated += (_, payload) =>
@@ -75,12 +75,6 @@ client.CashInCanceled += (_, payload) =>
 {
     Console.WriteLine($"CashIn {payload.CashIn.Id} canceled");
     DumpPayload("cashIn.canceled", payload);
-};
-
-client.CashInCreateFailed += (_, payload) =>
-{
-    Console.WriteLine($"CashIn creation failed: {payload.Code} - {payload.Message}");
-    DumpPayload("cashIn.create.error", payload);
 };
 
 client.CashOutPaidByUser += (_, payload) =>
@@ -105,12 +99,6 @@ client.CashOutCanceled += (_, payload) =>
 {
     Console.WriteLine($"CashOut {payload.CashOut.Id} canceled");
     DumpPayload("cashOut.canceled", payload);
-};
-
-client.CashOutCreateFailed += (_, payload) =>
-{
-    Console.WriteLine($"CashOut creation failed: {payload.Code} - {payload.Message}");
-    DumpPayload("cashOut.create.error", payload);
 };
 
 client.GeneralErrorReceived += (_, payload) =>
