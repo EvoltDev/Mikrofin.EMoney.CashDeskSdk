@@ -2,8 +2,8 @@
 
 ## Šta je Mikrofin EMoney CashDesk SDK?
 
-Mikrofin.EMoney.CashDeskSdk je .NET biblioteka koja omogućava vašoj aplikaciji 
-da se poveže na Mikrofin EMoney Core API putem WebSocket konekcije i obavlja rad 
+Mikrofin.EMoney.CashDeskSdk je .NET biblioteka koja omogućava vašoj aplikaciji
+da se poveže na Mikrofin EMoney Core API putem WebSocket konekcije i obavlja rad
 sa blagajnom (Cash Desk).
 
 Pomoću ovog SDK-a možete:
@@ -19,19 +19,17 @@ Pomoću ovog SDK-a možete:
 
 - primati jasno definisane događaje koje integracija može
   pretvoriti u UI obavijesti ili poslovnu logiku:
-  - CashierLoginSuccess
-  - CashierLoginError
+  - CashierLoginSucceeded
+  - CashierLoginFailed
   - PaymentCreated
-  - PaymentCreateError
+  - TransactionCreateFailed
   - PaymentCompleted
   - CashInCreated
   - CashInCompleted
-  - CashInCreateError
   - CashOutCreated
   - CashOutPaidByUser
   - CashOutCompleted
-  - CashOutCreateError
-  - GeneralError
+  - GeneralErrorReceived
 
 SDK sakriva kompletnu WebSocket komunikaciju, tako da vi radite samo sa jasnim C# metodama i događajima.
 
@@ -49,14 +47,12 @@ SDK sakriva kompletnu WebSocket komunikaciju, tako da vi radite samo sa jasnim C
 3.	Server vam vraća odgovore kroz događaje (events), npr.:
    - PaymentCreated
    - PaymentCompleted
-   - PaymentCreateError
+   - TransactionCreateFailed
    - CashInCreated
    - CashInCompleted
-   - CashInCreateError
    - CashOutCreated
    - CashOutPaidByUser
    - CashOutCompleted
-   - CashOutCreateError
 4.	Te događaje možete koristiti za:
    - prikaz QR koda,
    - obavijesti korisniku,
@@ -71,7 +67,7 @@ Softverski zahtjevi
   - .NET 6.0 ili noviji
   - Ili bilo koje runtime okruženje koje podržava .NET Standard 2.0
 
-Sistemski zahtjevi 
+Sistemski zahtjevi
   - Kreiran blagajnički (cashier) račun u EMoney Core sistemu
   - Pristup WebSocket endpointu:
     - Lokalno:
@@ -87,7 +83,7 @@ Sistemski zahtjevi
 ## Instalacija SDK-a
 Opcija 1: preko .NET CLI (NuGet paket)
 
-```bash 
+```bash
 dotnet add package Mikrofin.EMoney.CashDeskSdk
 ```
 
@@ -217,36 +213,34 @@ await client.DisconnectAsync();
 
 | Događaj                 | Opis                                                      | Payload (ključna polja)                                                                                                                                             |
 |-------------------------|-----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `CashierLoginSucceeded` | Server je prihvatio `cashier.login`.                      | `Cashier` (AccountId, UserName, Location…), opcioni `PendingPayment` (ako integrator treba odmah preuzeti postojeću uplatu), `PaymentDeepLink` (ako postoji).       |
+| `CashierLoginSucceeded` | Server je prihvatio `cashier.login`.                      | `Cashier` (AccountId, UserName, Location…), opciona polja `PendingPayment` + `PaymentDeepLink`, `PendingCashIn` + `CashInDeepLink`, `PendingCashOut` + `CashOutDeepLink` (zavisno od tipa pending transakcije). |
 | `CashierLoginFailed`    | Prijava odbijena.                                         | `CashDeskErrorPayload` – `Code` (npr. `InvalidCredentials`, `UserLocked`) i `Message`. Nijedno polje nije `null`; koristi ih za prikaz operateru ili za audit log.  |
 | `PaymentCreated`        | `payment.create` uspješan.                                | `PaymentCreatedPayload` – `Payment` (`PaymentDetailsResponse`: Id, Amount, Currency, Status, Metadata, LineItems), obavezni `PaymentDeepLink`.                      |
-| `PaymentCreateFailed`   | Kreiranje uplate odbijeno (`payment.create.error`).       | `PaymentCreateErrorPayload` – nasljeđuje `CashDeskErrorPayload`. Opcioni `PendingPayment` (ako server zadržava prethodnu uplatu). `Code` npr. `MissingLineItems`.   |
+| `TransactionCreateFailed` | Kreiranje transakcije odbijeno (`transaction.create.error`). | `TransactionCreateErrorPayload` – nasljeđuje `CashDeskErrorPayload`. Opciona polja: `PendingPayment` + `PaymentDeepLink`, `PendingCashIn` + `CashInDeepLink`, `PendingCashOut` + `CashOutDeepLink` (zavisno od tipa transakcije), uz `Code` i `Message`. |
 | `PaymentCompleted`      | Korisnik je završio plaćanje (`payment.completed`).       | `PaymentCompletedPayload` – `Payment` (iste strukture kao iznad) i `UserId` koji je inicirao završetak.                                                             |
 | `GeneralErrorReceived`  | Šalje se `cashdesk.error` za sve ostale greške protokola. | `CashDeskErrorPayload` – `Code`, `Message`. Koristite za prikaz korisniku ili logovanje; može značiti da je server odbio komandu zbog stanja uređaja.               |
 | `ConnectionClosed`      | Konekcija zatvorena sa bilo koje strane.                  | `ConnectionClosedEventArgs` – `Status` (npr. `NormalClosure`, `AbnormalClosure`), `Description` (poruka servera ili izuzetak). Korisno za prikaz i za retry logiku. |
 | `CashInCreated`         | `cashIn.create` uspješan.                                 | `CashInCreatedPayload` – `CashIn` (`CashInDetailsResponse`: Id, Amount, Currency, Status, Location, CreatedAt), obavezni `CashInDeepLink`.                          |
-| `CashInCreateFailed`    | Kreiranje cashIna odbijeno (`cashIn.create.error`).       | `CashInCreateErrorPayload` – nasljeđuje `CashDeskErrorPayload`. Opcioni `PendingCashIn` (ako server zadržava prethodnu uplatu). `Code`.                             |
 | `CashInCompleted`       | Korisnik je završio cashIn (`cashIn.completed`).          | `CashInCompletedPayload` – `CashIn` (iste strukture kao iznad) i `UserId` koji je inicirao završetak.                                                               |
 | `CashOutCreated`        | `cashOut.create` uspješan.                                | `CashOutCreatedPayload` – `CashOut` (`CashOutDetailsResponse`: Id, Amount, Currency, Status, Location, CreatedAt), obavezni `CashOutDeepLink`.                      |
-| `CashOutCreateFailed`   | Kreiranje cashOuta odbijeno (`cashOut.create.error`).     | `CashOutCreateErrorPayload` – nasljeđuje `CashDeskErrorPayload`. Opcioni `PendingCashOut` (ako server zadržava prethodnu uplatu). `Code`.                           |
 | `CashOutPaidByUser`     | cashOut uplacen od strane usera                           | `CashOutPaidByUserPayload` – `CashOut` (`CashOutDetailsResponse`: Id, Amount, Currency, Status, Location, CreatedAt) i `UserId` koji je inicirao uplatu.            |
 | `CashOutCompleted`      | Korisnik je završio cashOut (`cashOut.completed`).        | `CashInCompletedPayload` – `CashOut` (iste strukture kao iznad) i `UserId` koji je inicirao završetak.                                                              |
 
 ### Obavezna polja po zahtjevima
 
-- `CashierLoginRequest`: 
+- `CashierLoginRequest`:
   - `AccountId` - string (obavezno)
   - `UserName` - string (obavezno)
   - `Password` - string (obavezno)
 
-- `CashDeskPaymentCreateRequest`: 
+- `CashDeskPaymentCreateRequest`:
   - `TotalAmount` - decimal (obavezan)
   - `Currency` - string (default `BAM`).
   - `LineItems` - `CashDeskPaymentLineItemRequest` (opcionalan)
     - `Name` - string (obavezan)
     - `UnitPrice` - decimal (obavezan)
     - `Quantity` - int (default 1)
-  - `PaymentMetadata` - `CashDeskPaymentMetadata` (može biti prazna lista) 
+  - `PaymentMetadata` - `CashDeskPaymentMetadata` (može biti prazna lista)
     - `Key` - string
     - `Value` - string
     - `DisplayToUser` - bool (default `false`).
@@ -277,7 +271,7 @@ await client.DisconnectAsync();
   - `Amount` - decimal
   - `Currency` - string
   - `Status` - enum (`Pending`, `Successful`, `Canceled`)
-  - `Location` - `LocationInfo` 
+  - `Location` - `LocationInfo`
     - `Name` - string
     - `Address` - string
   - `CreatedAt` - `JsonElement` (server šalje datum u ISO formatu)
@@ -321,12 +315,10 @@ Koristite ova polja direktno ili mapirajte na vlastite DTO klasse. SDK već kori
 - U slučaju izuzetka u `ReceiveLoop` SDK poziva `ConnectionClosed` sa razlogom.
 - Ako primite `CashierLoginFailed`, tipično treba ponovo pitati korisnika za
   kredencijale ili blokirati dalji rad.
-- `PaymentCreateFailed` vraća i eventualnu `PendingPayment`, što vam omogućava
-  prikaz korisniku šta je ostalo otvoreno.
-- `CashInCreateFailed` vraća i eventualnu `PendingCashIn`, što vam omogućava
-    prikaz korisniku šta je ostalo otvoreno.
-- `CashOutCreateFailed` vraća i eventualnu `PendingCashOut`, što vam omogućava
-    prikaz korisniku šta je ostalo otvoreno.
+- `TransactionCreateFailed` može vratiti `PendingPayment` + `PaymentDeepLink`,
+  `PendingCashIn` + `CashInDeepLink` ili `PendingCashOut` + `CashOutDeepLink`,
+  što vam omogućava prikaz korisniku šta je ostalo otvoreno i direktno
+  usmjeravanje na odgovarajući deep link.
 
 ## Testiranje i okruženja
 

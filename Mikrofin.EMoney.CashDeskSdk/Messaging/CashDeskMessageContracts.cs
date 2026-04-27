@@ -12,7 +12,7 @@ internal static class CashDeskMessageTypes
     public const string CashierLoginError = "cashier.login.error";
     public const string PaymentCreate = "payment.create";
     public const string PaymentCreated = "payment.created";
-    public const string PaymentCreateError = "payment.create.error";
+    public const string TransactionCreateError = "transaction.create.error";
     public const string PaymentCancel = "payment.cancel";
     public const string PaymentCanceled = "payment.canceled";
     public const string PaymentCompleted = "payment.completed";
@@ -21,14 +21,12 @@ internal static class CashDeskMessageTypes
     public const string CashInCancel = "cashIn.cancel";
     public const string CashInCanceled = "cashIn.canceled";
     public const string CashInCompleted = "cashIn.completed";
-    public const string CashInCreateError = "cashIn.create.error";
     public const string CashOutCreate = "cashOut.create";
     public const string CashOutCreated = "cashOut.created";
     public const string CashOutCancel = "cashOut.cancel";
     public const string CashOutCanceled = "cashOut.canceled";
     public const string CashOutComplete = "cashOut.complete";
     public const string CashOutCompleted = "cashOut.completed";
-    public const string CashOutCreateError = "cashOut.create.error";
     public const string CashOutPaidByUser = "cashout.paid";
     public const string GeneralError = "cashdesk.error";
 }
@@ -189,6 +187,10 @@ public sealed class CashierLoginSuccessPayload
     public CashDeskCashierInfo Cashier { get; set; } = new();
     public PaymentDetailsResponse? PendingPayment { get; set; }
     public string? PaymentDeepLink { get; set; }
+    public CashInDetailsResponse? PendingCashIn { get; set; }
+    public string? CashInDeepLink { get; set; }
+    public CashOutDetailsResponse? PendingCashOut { get; set; }
+    public string? CashOutDeepLink { get; set; }
 }
 
 public sealed class CashDeskCashierInfo
@@ -234,21 +236,10 @@ public sealed class CashInCanceledPayload
     public CashInDetailsResponse CashIn { get; set; } = new();
 }
 
-public sealed class CashInCreateErrorPayload : CashDeskErrorPayload
-{
-    public CashInDetailsResponse? PendingCashIn { get; set; }
-}
-
 public sealed class CashOutCreatedPayload
 {
     public CashOutDetailsResponse CashOut { get; set; } = new();
     public string CashOutDeepLink { get; set; } = string.Empty;
-}
-
-public sealed class CashOutCreateErrorPayload : CashDeskErrorPayload
-{
-    public CashOutDetailsResponse? PendingCashOut { get; set; }
-
 }
 
 public sealed class CashOutPaidByUserPayload
@@ -274,9 +265,14 @@ public class CashDeskErrorPayload
     public string Message { get; set; } = string.Empty;
 }
 
-public sealed class PaymentCreateErrorPayload : CashDeskErrorPayload
+public sealed class TransactionCreateErrorPayload : CashDeskErrorPayload
 {
     public PaymentDetailsResponse? PendingPayment { get; set; }
+    public string? PaymentDeepLink { get; set; }
+    public CashOutDetailsResponse? PendingCashOut { get; set; }
+    public string? CashOutDeepLink { get; set; }
+    public CashInDetailsResponse? PendingCashIn { get; set; }
+    public string? CashInDeepLink { get; set; }
 }
 
 public sealed class PaymentDetailsResponse
