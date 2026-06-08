@@ -82,7 +82,7 @@ Sistemski zahtjevi
       `wss://test-api-emoney.mfsoftware.com/ws/cashdesk`
     - Prod
 
-      `wss://<prod-host>/ws/cashdesk`
+      `wss://api.totopay.ba/ws/cashdesk`
 
 ## Instalacija SDK-a
 Opcija 1: preko .NET CLI (NuGet paket)
@@ -334,7 +334,7 @@ Koristite ova polja direktno ili mapirajte na vlastite DTO klasse. SDK već kori
   `appsettings.json` na `ws://localhost:5000/ws/cashdesk`.
 - **Development**: `DOTNET_ENVIRONMENT=Development` + `appsettings.Development.json`
   gdje definišete `wss://test-api-emoney.mfsoftware.com/ws/cashdesk` ili drugi URL.
-- **Production**: koristite `wss://` (TLS) URL koji obezbjeđuje vaš API gateway;
+- **Production**: koristite `wss://api.totopay.ba/ws/cashdesk` (TLS) URL koji obezbjeđuje vaš API gateway;
   provjerite da li treba dodatna autentifikacija na nivou zaglavlja.
 - **Automatski testovi**: možete koristiti testove iz Mikrofin.EMoney.CashDeskSdk.Tests.
 
